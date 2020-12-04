@@ -22,6 +22,10 @@ yarn start
 ```
 
 # How to use
+Access `http://localhost:3000/admin` in browser, and you will find all patient appointments in a table looks like this.
+<img src="https://github.com/wfnuser/interview/blob/master/patient/server.png?raw=true">
+Access `http://localhost:3000/` in browser, and you can register a patient appointment.
+<img src="https://github.com/wfnuser/interview/blob/master/patient/client.png?raw=true">
 
 
 
