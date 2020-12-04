@@ -5,7 +5,10 @@ import (
 	"element14.site/server/controller"
 	"element14.site/server/schema"
 	"fmt"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"time"
 )
 
 var err error
@@ -25,7 +28,18 @@ func main() {
 	config.DB.AutoMigrate(&schema.Appointment{})
 
 	//setup routes
-	r := controller.SetupRouter()
+	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"},
+		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"content-type", "Origin"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge: 12 * time.Hour,
+	}))
+	controller.SetupAppointmentRouter(r)
+	r.Static("/v1/files", "./files")
+
 
 	// running
 	r.Run()

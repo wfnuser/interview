@@ -14,7 +14,8 @@ type Appointment struct {
 	Address string `json:"address"`
 	Phone   string `json:"phone"`
 	Email   string `json:"email"`
-	Time    string `json:"time"`
+	Date    string `json:"date"`
+	Photo   string `json:"photo"`
 }
 
 func (b *Appointment) TableName() string {
@@ -32,6 +33,7 @@ func GetAllAppointments(appointment *[]Appointment) (err error) {
 //insert a appointment
 func CreateAppointment(appointment *Appointment) (err error) {
 	if err = config.DB.Create(appointment).Error; err != nil {
+		fmt.Printf("%v\n", err)
 		return err
 	}
 	return nil

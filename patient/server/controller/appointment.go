@@ -1,9 +1,12 @@
 package controller
 
 import (
-	"net/http"
-	"github.com/gin-gonic/gin"
 	"element14.site/server/schema"
+	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid" // To generate random file names
+	"net/http"
+	"path/filepath"
 )
 
 //List all Appointments
@@ -21,6 +24,7 @@ func GetAppointments(c *gin.Context) {
 func CreateAppointment(c *gin.Context) {
 	var Appointment schema.Appointment
 	c.BindJSON(&Appointment)
+	fmt.Printf("APPOINTMENT %v\n", Appointment)
 	err := schema.CreateAppointment(&Appointment)
 	if err != nil {
 		c.AbortWithStatus(http.StatusNotFound)
@@ -70,9 +74,39 @@ func DeleteAppointment(c *gin.Context) {
 	}
 }
 
+func SaveFileHandler(c *gin.Context) {
+	file, err := c.FormFile("file")
+	// The file cannot be received.
+	if err != nil {
+		fmt.Printf("%v\n", err)
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{
+			"message": "No file is received",
+		})
+		return
+	}
 
-func SetupRouter() *gin.Engine {
-	r := gin.Default()
+	// Retrieve file information
+	extension := filepath.Ext(file.Filename)
+	// Generate random file name for the new uploaded file so it doesn't override the old file with same name\
+	newFileName := uuid.New().String() + extension
+
+
+	// The file is received, so let's save it
+	if err := c.SaveUploadedFile(file, "./files/"+newFileName); err != nil {
+		fmt.Printf("save err: %v\n", err)
+		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			"message": "Unable to save the file",
+		})
+		return
+	}
+
+	// File saved successfully. Return proper result
+	c.JSON(http.StatusOK, gin.H{
+		"photo": newFileName,
+	})
+}
+
+func SetupAppointmentRouter(r *gin.Engine) *gin.Engine {
 	v1 := r.Group("/v1")
 	{
 		v1.GET("appointment", GetAppointments)
@@ -80,6 +114,8 @@ func SetupRouter() *gin.Engine {
 		v1.GET("appointment/:id", GetAppointment)
 		v1.PUT("appointment/:id", UpdateAppointment)
 		v1.DELETE("appointment/:id", DeleteAppointment)
+		v1.POST("appointment/upload", SaveFileHandler)
+
 	}
 	return r
 }
